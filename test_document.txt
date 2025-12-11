@@ -1,0 +1,16 @@
+CONFIDENTIAL EMPLOYEE RECORD
+
+Name: John Smith
+Email: john.smith@acmecorp.com
+Phone: (555) 123-4567
+SSN: 123-45-6789
+Date of Birth: March 15, 1985
+
+Emergency Contact: Jane Smith
+Contact Phone: 555-987-6543
+Contact Email: jane.smith@gmail.com
+
+Credit Card on File: 4111-1111-1111-1111
+
+Notes:
+Employee joined on 01/15/2020. Annual review scheduled for 12/01/2024.

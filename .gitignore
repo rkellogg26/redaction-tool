@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+venv/
+uploads/
+outputs/
+*.docx
+*.pdf
+!test_document.docx
+.DS_Store
