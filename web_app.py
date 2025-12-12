@@ -395,7 +395,7 @@ HTML_TEMPLATE = '''
             background-clip: text;
         }
         .subtitle {
-            color: rgba(255, 255, 255, 0.6);
+            color: #555;
             font-size: 1.1rem;
             font-weight: 400;
             max-width: 500px;
@@ -403,56 +403,54 @@ HTML_TEMPLATE = '''
             line-height: 1.6;
         }
         .card {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8f9fa;
             border-radius: 20px;
             padding: 28px;
             margin-bottom: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
+            border: 1px solid #e0e0e0;
             transition: all 0.3s ease;
         }
         .card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.12);
+            background: #f0f2f5;
+            border-color: #ccc;
         }
         .card h2 {
             font-size: 0.85rem;
             font-weight: 600;
             margin-bottom: 20px;
-            color: rgba(255, 255, 255, 0.5);
+            color: #333;
             text-transform: uppercase;
             letter-spacing: 0.1em;
         }
         .upload-zone {
-            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border: 2px dashed #ccc;
             border-radius: 16px;
             padding: 48px 32px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: rgba(0, 73, 171, 0.05);
+            background: #fafafa;
         }
         .upload-zone:hover {
-            border-color: rgba(0, 115, 230, 0.6);
-            background: rgba(0, 73, 171, 0.1);
+            border-color: #0073E6;
+            background: rgba(0, 115, 230, 0.05);
             transform: translateY(-2px);
         }
         .upload-zone.dragover {
             border-color: #0073E6;
-            background: rgba(0, 115, 230, 0.15);
-            box-shadow: 0 0 40px rgba(0, 115, 230, 0.2);
+            background: rgba(0, 115, 230, 0.1);
+            box-shadow: 0 0 40px rgba(0, 115, 230, 0.15);
         }
         .upload-icon {
             font-size: 56px;
             margin-bottom: 16px;
-            filter: grayscale(0.3);
         }
         .upload-zone p {
             font-size: 1rem;
-            color: rgba(255, 255, 255, 0.8);
+            color: #333;
         }
         .upload-zone .hint {
-            color: rgba(255, 255, 255, 0.4);
+            color: #888;
             font-size: 0.9rem;
             margin-top: 8px;
         }
@@ -468,7 +466,7 @@ HTML_TEMPLATE = '''
         }
         .file-item {
             padding: 14px 18px;
-            background: rgba(0, 115, 230, 0.1);
+            background: rgba(0, 115, 230, 0.08);
             border: 1px solid rgba(0, 115, 230, 0.2);
             border-radius: 12px;
             margin-bottom: 10px;
@@ -478,15 +476,16 @@ HTML_TEMPLATE = '''
             transition: all 0.2s ease;
         }
         .file-item:hover {
-            background: rgba(0, 115, 230, 0.15);
+            background: rgba(0, 115, 230, 0.12);
         }
         .file-item span {
             font-size: 0.95rem;
+            color: #333;
         }
         .file-item .remove-btn {
-            background: rgba(255, 82, 82, 0.2);
-            border: 1px solid rgba(255, 82, 82, 0.3);
-            color: #ff6b6b;
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
             padding: 6px 14px;
             border-radius: 8px;
             cursor: pointer;
@@ -495,7 +494,7 @@ HTML_TEMPLATE = '''
             transition: all 0.2s ease;
         }
         .file-item .remove-btn:hover {
-            background: rgba(255, 82, 82, 0.3);
+            background: rgba(220, 53, 69, 0.2);
         }
         .categories {
             display: grid;
@@ -506,24 +505,24 @@ HTML_TEMPLATE = '''
             display: flex;
             align-items: flex-start;
             padding: 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #fff;
+            border: 1px solid #ddd;
             border-radius: 14px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
         .category-item:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(255, 255, 255, 0.15);
+            background: #f5f5f5;
+            border-color: #bbb;
             transform: translateY(-1px);
         }
         .category-item.corporate-item {
             background: rgba(255, 152, 0, 0.08);
-            border-color: rgba(255, 152, 0, 0.2);
+            border-color: rgba(255, 152, 0, 0.3);
         }
         .category-item.corporate-item:hover {
-            background: rgba(255, 152, 0, 0.12);
-            border-color: rgba(255, 152, 0, 0.3);
+            background: rgba(255, 152, 0, 0.15);
+            border-color: rgba(255, 152, 0, 0.5);
         }
         .category-item input[type="checkbox"] {
             width: 20px;
@@ -541,19 +540,20 @@ HTML_TEMPLATE = '''
             font-weight: 600;
             font-size: 0.95rem;
             margin-bottom: 4px;
+            color: #222;
         }
         .category-example {
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.4);
+            color: #777;
         }
         .custom-terms textarea {
             width: 100%;
             height: 130px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #fff;
+            border: 1px solid #ddd;
             border-radius: 14px;
             padding: 16px;
-            color: #fff;
+            color: #333;
             font-family: 'SF Mono', 'Fira Code', monospace;
             font-size: 14px;
             resize: vertical;
@@ -561,14 +561,14 @@ HTML_TEMPLATE = '''
         }
         .custom-terms textarea:focus {
             outline: none;
-            border-color: rgba(0, 115, 230, 0.5);
-            box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.1);
+            border-color: #0073E6;
+            box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15);
         }
         .custom-terms textarea::placeholder {
-            color: rgba(255, 255, 255, 0.3);
+            color: #999;
         }
         .custom-terms .hint {
-            color: rgba(255, 255, 255, 0.4);
+            color: #666;
             font-size: 0.85rem;
             margin-bottom: 12px;
         }
@@ -647,7 +647,7 @@ HTML_TEMPLATE = '''
             font-weight: 600;
             text-transform: none;
             letter-spacing: normal;
-            color: #fff;
+            color: #222;
         }
         .stats {
             display: grid;
@@ -656,7 +656,7 @@ HTML_TEMPLATE = '''
             margin-bottom: 24px;
         }
         .stat-item {
-            background: rgba(0, 115, 230, 0.1);
+            background: rgba(0, 115, 230, 0.08);
             border: 1px solid rgba(0, 115, 230, 0.2);
             padding: 20px;
             border-radius: 14px;
@@ -665,19 +665,19 @@ HTML_TEMPLATE = '''
         .stat-value {
             font-size: 2.25rem;
             font-weight: 700;
-            color: #ffffff;
+            color: #0073E6;
             line-height: 1;
             margin-bottom: 6px;
         }
         .stat-label {
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: #555;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
         .preview-box {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #fff;
+            border: 1px solid #ddd;
             border-radius: 14px;
             padding: 20px;
             max-height: 320px;
@@ -687,6 +687,7 @@ HTML_TEMPLATE = '''
             line-height: 1.7;
             white-space: pre-wrap;
             word-break: break-word;
+            color: #333;
         }
         .preview-box .match {
             background: linear-gradient(135deg, #FFD54F 0%, #FFB300 100%);
@@ -706,7 +707,7 @@ HTML_TEMPLATE = '''
         .spinner {
             width: 56px;
             height: 56px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
+            border: 3px solid #e0e0e0;
             border-top-color: #0073E6;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
@@ -726,8 +727,8 @@ HTML_TEMPLATE = '''
             margin-top: 20px;
         }
         .batch-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #fff;
+            border: 1px solid #ddd;
             padding: 16px 20px;
             border-radius: 12px;
             margin-bottom: 10px;
@@ -741,16 +742,17 @@ HTML_TEMPLATE = '''
         .batch-item .file-name {
             font-weight: 600;
             font-size: 0.95rem;
+            color: #222;
         }
         .batch-item .file-stats {
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: #666;
             margin-top: 4px;
         }
         .progress-bar {
             width: 100%;
             height: 6px;
-            background: rgba(255, 255, 255, 0.1);
+            background: #e0e0e0;
             border-radius: 3px;
             margin: 20px 0;
             overflow: hidden;
@@ -765,15 +767,15 @@ HTML_TEMPLATE = '''
         .progress-text {
             text-align: center;
             margin-bottom: 12px;
-            color: rgba(255, 255, 255, 0.7);
+            color: #555;
             font-size: 0.95rem;
         }
         .footer {
             text-align: center;
             margin-top: 48px;
             padding-top: 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.3);
+            border-top: 1px solid #e0e0e0;
+            color: #999;
             font-size: 0.85rem;
         }
     </style>
