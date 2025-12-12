@@ -302,7 +302,7 @@ HTML_TEMPLATE = '''
         }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #001534;
+            background: #ffffff;
             min-height: 100vh;
             color: #fff;
             overflow-x: hidden;
@@ -315,9 +315,9 @@ HTML_TEMPLATE = '''
             right: 0;
             bottom: 0;
             background:
-                radial-gradient(ellipse at 20% 20%, rgba(0, 48, 135, 0.4) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(0, 73, 171, 0.3) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(0, 48, 135, 0.2) 0%, transparent 70%);
+                radial-gradient(ellipse at 20% 20%, rgba(0, 48, 135, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(0, 73, 171, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(0, 48, 135, 0.04) 0%, transparent 70%);
             pointer-events: none;
             z-index: 0;
         }
@@ -343,7 +343,7 @@ HTML_TEMPLATE = '''
             font-size: 2.2rem;
             font-weight: 800;
             letter-spacing: 0.15em;
-            color: #fff;
+            color: #000;
             display: flex;
             align-items: center;
         }
@@ -360,7 +360,7 @@ HTML_TEMPLATE = '''
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: #fff;
+            color: #000;
             z-index: 1;
         }
         .logo-text .redacted .bar {
@@ -369,7 +369,7 @@ HTML_TEMPLATE = '''
             left: 0;
             width: 100%;
             height: 0%;
-            background: #fff;
+            background: #000;
             border-radius: 3px;
             z-index: 2;
             animation: redact-drape 3s ease-out forwards;
