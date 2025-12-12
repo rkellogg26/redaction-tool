@@ -350,7 +350,7 @@ HTML_TEMPLATE = '''
         .logo-text .redacted {
             display: inline-block;
             position: relative;
-            width: 0.75em;
+            width: 1.0em;
             height: 1.1em;
             margin: 0 2px;
             vertical-align: middle;
