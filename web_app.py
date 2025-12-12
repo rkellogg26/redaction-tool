@@ -72,6 +72,79 @@ PREDEFINED_CATEGORIES = {
         ],
         examples=["01/15/2024"]
     ),
+    "corporate": SensitiveCategory(
+        name="Corporate Buzzwords",
+        description="Icky corporate jargon",
+        patterns=[
+            r'\bsynerg(?:y|ies|ize|izing|istic)\b',
+            r'\bleverage[ds]?\b',
+            r'\bparadigm(?:s)?\s*(?:shift)?\b',
+            r'\bthought\s+leader(?:ship)?\b',
+            r'\bbest[- ]in[- ]class\b',
+            r'\bworld[- ]class\b',
+            r'\bcut(?:ting)?[- ]edge\b',
+            r'\bgame[- ]chang(?:er|ing)\b',
+            r'\bmove(?:ing)?\s+the\s+needle\b',
+            r'\blow[- ]hanging\s+fruit\b',
+            r'\bcircle\s+back\b',
+            r'\btouch\s+base\b',
+            r'\bdeep\s+dive\b',
+            r'\bdrill\s+down\b',
+            r'\b(?:strategic|passionate|driven|dynamic|proactive|innovative|visionary)\b',
+            r'\bstakeholder(?:s)?\b',
+            r'\bvalue[- ]add(?:ed)?\b',
+            r'\bwin[- ]win\b',
+            r'\bscalable\b',
+            r'\bagile\b',
+            r'\bdisrupt(?:ive|ion|ing|or)?\b',
+            r'\bimpact(?:ful)?\b',
+            r'\brobust\b',
+            r'\bholistic\b',
+            r'\becosystem\b',
+            r'\boptimize[ds]?\b',
+            r'\bstreamline[ds]?\b',
+            r'\bactionable(?:\s+insights?)?\b',
+            r'\bbandwidth\b',
+            r'\bcore\s+competenc(?:y|ies)\b',
+            r'\bempower(?:ed|ing|ment)?\b',
+            r'\bfacilitat(?:e[ds]?|ing|ion)\b',
+            r'\bgranular(?:ity)?\b',
+            r'\bincentivize[ds]?\b',
+            r'\bintegrat(?:e[ds]?|ion)\b',
+            r'\biterati(?:ve|on)\b',
+            r'\bKPI(?:s)?\b',
+            r'\bmetric(?:s)?\b',
+            r'\bmilestone(?:s)?\b',
+            r'\bmonetize[ds]?\b',
+            r'\bonboard(?:ed|ing)?\b',
+            r'\bpain\s+point(?:s)?\b',
+            r'\bpipeline\b',
+            r'\bpivot(?:ed|ing)?\b',
+            r'\bproactive(?:ly)?\b',
+            r'\broadmap\b',
+            r'\bROI\b',
+            r'\bscope\s+creep\b',
+            r'\bsiloed?\b',
+            r'\bsprint(?:s)?\b',
+            r'\bsync(?:ed)?\s+up\b',
+            r'\btake(?:away)?s?\b',
+            r'\bteam\s+player\b',
+            r'\bunpack(?:ing)?\b',
+            r'\bvertical(?:s)?\b',
+            r'\bwear(?:ing)?\s+many\s+hats\b',
+            r'\bhit\s+the\s+ground\s+running\b',
+            r'\bout\s+of\s+the\s+box\b',
+            r'\bpush\s+the\s+envelope\b',
+            r'\braise\s+the\s+bar\b',
+            r'\bresults[- ](?:driven|oriented)\b',
+            r'\bself[- ](?:starter|motivated)\b',
+            r'\bskill\s*set\b',
+            r'\bsolution(?:s)?[- ]oriented\b',
+            r'\bthink\s+outside\s+the\s+box\b',
+            r'\btrack\s+record\b',
+        ],
+        examples=["synergy"]
+    ),
 }
 
 
@@ -217,7 +290,10 @@ HTML_TEMPLATE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Redaction Tool</title>
+    <title>Redact | Document Privacy Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -225,279 +301,400 @@ HTML_TEMPLATE = '''
             padding: 0;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #001A4D 0%, #003087 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #001534;
             min-height: 100vh;
             color: #fff;
-            padding: 20px;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(0, 48, 135, 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(0, 73, 171, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(0, 48, 135, 0.2) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
         .container {
-            max-width: 900px;
+            max-width: 960px;
             margin: 0 auto;
+            padding: 40px 24px;
+            position: relative;
+            z-index: 1;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #0049AB 0%, #003087 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 8px 32px rgba(0, 73, 171, 0.4);
         }
         h1 {
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-            color: #ffffff;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            font-size: 2.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 0%, #a8c5e8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .subtitle {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+            font-weight: 400;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
         }
         .card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.12);
         }
         .card h2 {
-            font-size: 1.2rem;
-            margin-bottom: 16px;
-            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
         .upload-zone {
-            border: 2px dashed rgba(255, 255, 255, 0.5);
-            border-radius: 12px;
-            padding: 40px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 48px 32px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            background: rgba(0, 73, 171, 0.05);
         }
         .upload-zone:hover {
-            border-color: #ffffff;
-            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(0, 115, 230, 0.6);
+            background: rgba(0, 73, 171, 0.1);
+            transform: translateY(-2px);
         }
         .upload-zone.dragover {
-            border-color: #ffffff;
-            background: rgba(255, 255, 255, 0.15);
+            border-color: #0073E6;
+            background: rgba(0, 115, 230, 0.15);
+            box-shadow: 0 0 40px rgba(0, 115, 230, 0.2);
         }
         .upload-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
+            font-size: 56px;
+            margin-bottom: 16px;
+            filter: grayscale(0.3);
+        }
+        .upload-zone p {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .upload-zone .hint {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
+            margin-top: 8px;
         }
         .file-input {
             display: none;
         }
         .file-list {
-            margin-top: 15px;
+            margin-top: 20px;
             display: none;
         }
         .file-list.visible {
             display: block;
         }
         .file-item {
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
-            margin-bottom: 8px;
+            padding: 14px 18px;
+            background: rgba(0, 115, 230, 0.1);
+            border: 1px solid rgba(0, 115, 230, 0.2);
+            border-radius: 12px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: all 0.2s ease;
+        }
+        .file-item:hover {
+            background: rgba(0, 115, 230, 0.15);
+        }
+        .file-item span {
+            font-size: 0.95rem;
         }
         .file-item .remove-btn {
-            background: rgba(255, 0, 0, 0.3);
-            border: none;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 4px;
+            background: rgba(255, 82, 82, 0.2);
+            border: 1px solid rgba(255, 82, 82, 0.3);
+            color: #ff6b6b;
+            padding: 6px 14px;
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
         .file-item .remove-btn:hover {
-            background: rgba(255, 0, 0, 0.5);
+            background: rgba(255, 82, 82, 0.3);
         }
         .categories {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
         }
         .category-item {
             display: flex;
-            align-items: center;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            align-items: flex-start;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
         .category-item:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+        .category-item.corporate-item {
+            background: rgba(255, 152, 0, 0.08);
+            border-color: rgba(255, 152, 0, 0.2);
+        }
+        .category-item.corporate-item:hover {
+            background: rgba(255, 152, 0, 0.12);
+            border-color: rgba(255, 152, 0, 0.3);
         }
         .category-item input[type="checkbox"] {
             width: 20px;
             height: 20px;
-            margin-right: 12px;
-            accent-color: #003087;
+            margin-right: 14px;
+            margin-top: 2px;
+            accent-color: #0073E6;
+            flex-shrink: 0;
         }
         .category-item label {
             cursor: pointer;
             flex: 1;
         }
         .category-name {
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
         }
         .category-example {
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255, 255, 255, 0.4);
         }
         .custom-terms textarea {
             width: 100%;
-            height: 120px;
+            height: 130px;
             background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 16px;
             color: #fff;
-            font-family: monospace;
+            font-family: 'SF Mono', 'Fira Code', monospace;
             font-size: 14px;
             resize: vertical;
+            transition: all 0.2s ease;
         }
         .custom-terms textarea:focus {
             outline: none;
-            border-color: #ffffff;
+            border-color: rgba(0, 115, 230, 0.5);
+            box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.1);
         }
         .custom-terms textarea::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .custom-terms .hint {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
         }
         .buttons {
             display: flex;
-            gap: 12px;
+            gap: 14px;
             flex-wrap: wrap;
         }
         .btn {
-            padding: 14px 28px;
+            padding: 16px 32px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            font-family: 'Inter', sans-serif;
         }
         .btn-primary {
-            background: #ffffff;
-            color: #003087;
+            background: linear-gradient(135deg, #0073E6 0%, #0049AB 100%);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 115, 230, 0.4);
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 30px rgba(0, 115, 230, 0.5);
         }
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
             color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
         }
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
         .results {
             display: none;
         }
         .results.visible {
             display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .results-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 16px;
+            margin-bottom: 24px;
         }
         .results-header .icon {
-            width: 48px;
-            height: 48px;
-            background: #ffffff;
-            color: #003087;
-            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #00C853 0%, #00A844 100%);
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 28px;
+            box-shadow: 0 8px 24px rgba(0, 200, 83, 0.3);
+        }
+        .results-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-transform: none;
+            letter-spacing: normal;
+            color: #fff;
         }
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
         }
         .stat-item {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 16px;
-            border-radius: 8px;
+            background: rgba(0, 115, 230, 0.1);
+            border: 1px solid rgba(0, 115, 230, 0.2);
+            padding: 20px;
+            border-radius: 14px;
             text-align: center;
         }
         .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
+            font-size: 2.25rem;
+            font-weight: 700;
             color: #ffffff;
+            line-height: 1;
+            margin-bottom: 6px;
         }
         .stat-label {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         .preview-box {
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            padding: 16px;
-            max-height: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+            max-height: 320px;
             overflow-y: auto;
-            font-family: monospace;
+            font-family: 'SF Mono', 'Fira Code', monospace;
             font-size: 13px;
-            line-height: 1.6;
+            line-height: 1.7;
             white-space: pre-wrap;
             word-break: break-word;
         }
         .preview-box .match {
-            background: #ffeb3b;
+            background: linear-gradient(135deg, #FFD54F 0%, #FFB300 100%);
             color: #000;
-            padding: 2px 4px;
-            border-radius: 3px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
         }
         .loading {
             display: none;
             text-align: center;
-            padding: 40px;
+            padding: 48px;
         }
         .loading.visible {
             display: block;
         }
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-top-color: #ffffff;
+            width: 56px;
+            height: 56px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #0073E6;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 24px;
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         .download-btn {
             display: none;
-            margin-top: 20px;
+            margin-top: 24px;
         }
         .download-btn.visible {
             display: inline-flex;
         }
         .batch-results {
-            margin-top: 16px;
+            margin-top: 20px;
         }
         .batch-item {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -506,60 +703,76 @@ HTML_TEMPLATE = '''
             flex: 1;
         }
         .batch-item .file-name {
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 0.95rem;
         }
         .batch-item .file-stats {
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 4px;
         }
         .progress-bar {
             width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            margin: 16px 0;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 20px 0;
             overflow: hidden;
         }
         .progress-fill {
             height: 100%;
-            background: #ffffff;
-            border-radius: 4px;
+            background: linear-gradient(90deg, #0073E6 0%, #00A8E8 100%);
+            border-radius: 3px;
             transition: width 0.3s ease;
             width: 0%;
         }
         .progress-text {
             text-align: center;
-            margin-bottom: 10px;
-            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.85rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Document Redaction Tool</h1>
-        <p class="subtitle">Automatically redact sensitive information from PDFs and Word documents</p>
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🔒</div>
+                <h1>Redact</h1>
+            </div>
+            <p class="subtitle">Protect sensitive information in your documents with intelligent, automated redaction</p>
+        </div>
 
         <form id="redactionForm" enctype="multipart/form-data">
             <div class="card">
-                <h2>1. Upload Documents</h2>
+                <h2>Upload Documents</h2>
                 <div class="upload-zone" id="uploadZone">
                     <div class="upload-icon">📄</div>
-                    <p>Drag & drop your PDF or Word documents here</p>
-                    <p style="color: rgba(255,255,255,0.6); margin-top: 8px;">or click to browse (multiple files supported)</p>
+                    <p>Drag & drop your files here</p>
+                    <p class="hint">PDF and Word documents supported • Multiple files allowed</p>
                     <input type="file" name="files" id="fileInput" class="file-input" accept=".pdf,.docx" multiple>
                 </div>
                 <div class="file-list" id="fileList"></div>
             </div>
 
             <div class="card">
-                <h2>2. Select Information to Redact</h2>
+                <h2>What to Redact</h2>
                 <div class="categories">
                     {% for key, cat in categories.items() %}
-                    <div class="category-item">
-                        <input type="checkbox" name="categories" value="{{ key }}" id="cat_{{ key }}" checked>
+                    <div class="category-item{% if key == 'corporate' %} corporate-item{% endif %}">
+                        <input type="checkbox" name="categories" value="{{ key }}" id="cat_{{ key }}" {% if key != 'corporate' %}checked{% endif %}>
                         <label for="cat_{{ key }}">
                             <div class="category-name">{{ cat.name }}</div>
-                            <div class="category-example">e.g., {{ cat.examples[0] }}</div>
+                            <div class="category-example">{{ cat.description }}</div>
                         </label>
                     </div>
                     {% endfor %}
@@ -567,10 +780,10 @@ HTML_TEMPLATE = '''
             </div>
 
             <div class="card">
-                <h2>3. Custom Terms (Optional)</h2>
-                <p style="color: rgba(255,255,255,0.7); margin-bottom: 12px;">Add names, project names, or other specific terms to redact (one per line)</p>
+                <h2>Custom Terms</h2>
                 <div class="custom-terms">
-                    <textarea name="custom_terms" id="customTerms" placeholder="John Doe&#10;Project Alpha&#10;Confidential"></textarea>
+                    <p class="hint">Add specific names, phrases, or terms to redact (one per line)</p>
+                    <textarea name="custom_terms" id="customTerms" placeholder="John Doe&#10;Project Phoenix&#10;Confidential"></textarea>
                 </div>
             </div>
 
@@ -598,8 +811,8 @@ HTML_TEMPLATE = '''
             <div class="results-header">
                 <div class="icon">✓</div>
                 <div>
-                    <h2 style="margin: 0;">Redaction Complete!</h2>
-                    <p style="color: rgba(255,255,255,0.7); margin-top: 4px;" id="outputSummary"></p>
+                    <h2>Redaction Complete</h2>
+                    <p style="color: rgba(255,255,255,0.5); margin-top: 4px; font-size: 0.95rem;" id="outputSummary"></p>
                 </div>
             </div>
             <div class="stats" id="statsContainer"></div>
