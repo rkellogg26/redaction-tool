@@ -293,7 +293,7 @@ HTML_TEMPLATE = '''
     <title>Redact | Document Privacy Tool</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -301,7 +301,7 @@ HTML_TEMPLATE = '''
             padding: 0;
         }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #ffffff;
             min-height: 100vh;
             color: #fff;
@@ -339,7 +339,7 @@ HTML_TEMPLATE = '''
             margin-bottom: 16px;
         }
         .logo-text {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Roboto', sans-serif;
             font-size: 2.2rem;
             font-weight: 800;
             letter-spacing: 0.15em;
@@ -588,7 +588,7 @@ HTML_TEMPLATE = '''
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Roboto', sans-serif;
         }
         .btn-primary {
             background: linear-gradient(135deg, #0073E6 0%, #0049AB 100%);
