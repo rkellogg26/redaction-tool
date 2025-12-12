@@ -335,19 +335,25 @@ HTML_TEMPLATE = '''
         .logo {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
             margin-bottom: 16px;
         }
-        .logo-icon {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, #0049AB 0%, #003087 100%);
-            border-radius: 16px;
+        .logo-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            color: #fff;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            box-shadow: 0 8px 32px rgba(0, 73, 171, 0.4);
+        }
+        .logo-text .redacted {
+            display: inline-block;
+            background: #fff;
+            color: #fff;
+            width: 0.65em;
+            margin: 0 1px;
+            border-radius: 3px;
         }
         h1 {
             font-size: 2.75rem;
@@ -746,8 +752,7 @@ HTML_TEMPLATE = '''
     <div class="container">
         <div class="header">
             <div class="logo">
-                <div class="logo-icon">🔒</div>
-                <h1>Redact</h1>
+                <div class="logo-text">R<span class="redacted"></span>D<span class="redacted"></span>CT</div>
             </div>
             <p class="subtitle">Protect sensitive information in your documents with intelligent, automated redaction</p>
         </div>
