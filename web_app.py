@@ -350,10 +350,11 @@ HTML_TEMPLATE = '''
         .logo-text .redacted {
             display: inline-block;
             background: #fff;
-            color: #fff;
             width: 0.65em;
-            margin: 0 1px;
+            height: 1.1em;
+            margin: 0 2px;
             border-radius: 3px;
+            vertical-align: middle;
         }
         h1 {
             font-size: 2.75rem;
