@@ -349,12 +349,41 @@ HTML_TEMPLATE = '''
         }
         .logo-text .redacted {
             display: inline-block;
-            background: #fff;
+            position: relative;
             width: 0.65em;
             height: 1.1em;
             margin: 0 2px;
-            border-radius: 3px;
             vertical-align: middle;
+        }
+        .logo-text .redacted .letter {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            z-index: 1;
+        }
+        .logo-text .redacted .bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: #fff;
+            border-radius: 3px;
+            z-index: 2;
+            animation: redact-drape 3s ease-out forwards;
+            animation-delay: var(--delay, 0s);
+        }
+        .logo-text .redacted:nth-child(2) .bar {
+            --delay: 1s;
+        }
+        .logo-text .redacted:nth-child(4) .bar {
+            --delay: 2s;
+        }
+        @keyframes redact-drape {
+            0% { height: 0%; }
+            100% { height: 100%; }
         }
         h1 {
             font-size: 2.75rem;
@@ -753,7 +782,7 @@ HTML_TEMPLATE = '''
     <div class="container">
         <div class="header">
             <div class="logo">
-                <div class="logo-text">R<span class="redacted"></span>D<span class="redacted"></span>CT</div>
+                <div class="logo-text">R<span class="redacted"><span class="letter">E</span><span class="bar"></span></span>D<span class="redacted"><span class="letter">A</span><span class="bar"></span></span>CT</div>
             </div>
             <p class="subtitle">Protect sensitive information in your documents with intelligent, automated redaction</p>
         </div>
