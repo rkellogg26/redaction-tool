@@ -8,6 +8,7 @@ import re
 import uuid
 import shutil
 import tempfile
+import zipfile
 from pathlib import Path
 from dataclasses import dataclass, field
 from flask import Flask, render_template_string, request, send_file, jsonify, redirect, url_for
@@ -15,7 +16,7 @@ import fitz  # PyMuPDF
 from docx import Document
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max for batch uploads
 
 # Use temp directories for Render (ephemeral filesystem)
 UPLOAD_FOLDER = Path(tempfile.gettempdir()) / 'redaction_uploads'
@@ -225,7 +226,7 @@ HTML_TEMPLATE = '''
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #001A4D 0%, #003087 100%);
             min-height: 100vh;
             color: #fff;
             padding: 20px;
@@ -238,31 +239,29 @@ HTML_TEMPLATE = '''
             text-align: center;
             margin-bottom: 10px;
             font-size: 2.5rem;
-            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         .subtitle {
             text-align: center;
-            color: #888;
+            color: rgba(255, 255, 255, 0.8);
             margin-bottom: 30px;
         }
         .card {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             padding: 24px;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
         }
         .card h2 {
             font-size: 1.2rem;
             margin-bottom: 16px;
-            color: #00d4ff;
+            color: #ffffff;
         }
         .upload-zone {
-            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
             border-radius: 12px;
             padding: 40px;
             text-align: center;
@@ -270,12 +269,12 @@ HTML_TEMPLATE = '''
             transition: all 0.3s ease;
         }
         .upload-zone:hover {
-            border-color: #00d4ff;
-            background: rgba(0, 212, 255, 0.05);
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
         }
         .upload-zone.dragover {
-            border-color: #00d4ff;
-            background: rgba(0, 212, 255, 0.1);
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.15);
         }
         .upload-icon {
             font-size: 48px;
@@ -284,15 +283,32 @@ HTML_TEMPLATE = '''
         .file-input {
             display: none;
         }
-        .file-name {
+        .file-list {
             margin-top: 15px;
-            padding: 10px 15px;
-            background: rgba(0, 212, 255, 0.2);
-            border-radius: 8px;
             display: none;
         }
-        .file-name.visible {
-            display: inline-block;
+        .file-list.visible {
+            display: block;
+        }
+        .file-item {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-item .remove-btn {
+            background: rgba(255, 0, 0, 0.3);
+            border: none;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .file-item .remove-btn:hover {
+            background: rgba(255, 0, 0, 0.5);
         }
         .categories {
             display: grid;
@@ -303,19 +319,19 @@ HTML_TEMPLATE = '''
             display: flex;
             align-items: center;
             padding: 12px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
         .category-item:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
         }
         .category-item input[type="checkbox"] {
             width: 20px;
             height: 20px;
             margin-right: 12px;
-            accent-color: #00d4ff;
+            accent-color: #003087;
         }
         .category-item label {
             cursor: pointer;
@@ -326,13 +342,13 @@ HTML_TEMPLATE = '''
         }
         .category-example {
             font-size: 0.8rem;
-            color: #888;
+            color: rgba(255, 255, 255, 0.6);
         }
         .custom-terms textarea {
             width: 100%;
             height: 120px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 8px;
             padding: 12px;
             color: #fff;
@@ -342,10 +358,10 @@ HTML_TEMPLATE = '''
         }
         .custom-terms textarea:focus {
             outline: none;
-            border-color: #00d4ff;
+            border-color: #ffffff;
         }
         .custom-terms textarea::placeholder {
-            color: #666;
+            color: rgba(255, 255, 255, 0.5);
         }
         .buttons {
             display: flex;
@@ -365,20 +381,20 @@ HTML_TEMPLATE = '''
             gap: 8px;
         }
         .btn-primary {
-            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
-            color: #fff;
+            background: #ffffff;
+            color: #003087;
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
             color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3);
         }
         .btn:disabled {
             opacity: 0.5;
@@ -400,7 +416,8 @@ HTML_TEMPLATE = '''
         .results-header .icon {
             width: 48px;
             height: 48px;
-            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            background: #ffffff;
+            color: #003087;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -414,7 +431,7 @@ HTML_TEMPLATE = '''
             margin-bottom: 20px;
         }
         .stat-item {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.2);
             padding: 16px;
             border-radius: 8px;
             text-align: center;
@@ -422,14 +439,14 @@ HTML_TEMPLATE = '''
         .stat-value {
             font-size: 2rem;
             font-weight: bold;
-            color: #00d4ff;
+            color: #ffffff;
         }
         .stat-label {
             font-size: 0.85rem;
-            color: #888;
+            color: rgba(255, 255, 255, 0.7);
         }
         .preview-box {
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 8px;
             padding: 16px;
             max-height: 300px;
@@ -457,8 +474,8 @@ HTML_TEMPLATE = '''
         .spinner {
             width: 50px;
             height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #00d4ff;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #ffffff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
@@ -473,6 +490,48 @@ HTML_TEMPLATE = '''
         .download-btn.visible {
             display: inline-flex;
         }
+        .batch-results {
+            margin-top: 16px;
+        }
+        .batch-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .batch-item .file-info {
+            flex: 1;
+        }
+        .batch-item .file-name {
+            font-weight: 500;
+        }
+        .batch-item .file-stats {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #ffffff;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        .progress-text {
+            text-align: center;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
     </style>
 </head>
 <body>
@@ -482,14 +541,14 @@ HTML_TEMPLATE = '''
 
         <form id="redactionForm" enctype="multipart/form-data">
             <div class="card">
-                <h2>1. Upload Document</h2>
+                <h2>1. Upload Documents</h2>
                 <div class="upload-zone" id="uploadZone">
                     <div class="upload-icon">📄</div>
-                    <p>Drag & drop your PDF or Word document here</p>
-                    <p style="color: #666; margin-top: 8px;">or click to browse</p>
-                    <input type="file" name="file" id="fileInput" class="file-input" accept=".pdf,.docx">
+                    <p>Drag & drop your PDF or Word documents here</p>
+                    <p style="color: rgba(255,255,255,0.6); margin-top: 8px;">or click to browse (multiple files supported)</p>
+                    <input type="file" name="files" id="fileInput" class="file-input" accept=".pdf,.docx" multiple>
                 </div>
-                <div class="file-name" id="fileName"></div>
+                <div class="file-list" id="fileList"></div>
             </div>
 
             <div class="card">
@@ -509,7 +568,7 @@ HTML_TEMPLATE = '''
 
             <div class="card">
                 <h2>3. Custom Terms (Optional)</h2>
-                <p style="color: #888; margin-bottom: 12px;">Add names, project names, or other specific terms to redact (one per line)</p>
+                <p style="color: rgba(255,255,255,0.7); margin-bottom: 12px;">Add names, project names, or other specific terms to redact (one per line)</p>
                 <div class="custom-terms">
                     <textarea name="custom_terms" id="customTerms" placeholder="John Doe&#10;Project Alpha&#10;Confidential"></textarea>
                 </div>
@@ -521,7 +580,7 @@ HTML_TEMPLATE = '''
                         👁️ Preview
                     </button>
                     <button type="submit" class="btn btn-primary" id="redactBtn" disabled>
-                        🔒 Redact Document
+                        🔒 Redact Documents
                     </button>
                 </div>
             </div>
@@ -529,7 +588,10 @@ HTML_TEMPLATE = '''
 
         <div class="card loading" id="loading">
             <div class="spinner"></div>
-            <p>Processing your document...</p>
+            <p class="progress-text" id="progressText">Processing your documents...</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
         </div>
 
         <div class="card results" id="results">
@@ -537,12 +599,13 @@ HTML_TEMPLATE = '''
                 <div class="icon">✓</div>
                 <div>
                     <h2 style="margin: 0;">Redaction Complete!</h2>
-                    <p style="color: #888; margin-top: 4px;" id="outputFileName"></p>
+                    <p style="color: rgba(255,255,255,0.7); margin-top: 4px;" id="outputSummary"></p>
                 </div>
             </div>
             <div class="stats" id="statsContainer"></div>
+            <div class="batch-results" id="batchResults"></div>
             <a href="#" class="btn btn-primary download-btn" id="downloadBtn">
-                📥 Download Redacted Document
+                📥 Download Redacted Documents
             </a>
         </div>
 
@@ -557,13 +620,15 @@ HTML_TEMPLATE = '''
     <script>
         const uploadZone = document.getElementById('uploadZone');
         const fileInput = document.getElementById('fileInput');
-        const fileName = document.getElementById('fileName');
+        const fileList = document.getElementById('fileList');
         const previewBtn = document.getElementById('previewBtn');
         const redactBtn = document.getElementById('redactBtn');
         const form = document.getElementById('redactionForm');
         const loading = document.getElementById('loading');
         const results = document.getElementById('results');
         const previewResults = document.getElementById('previewResults');
+
+        let selectedFiles = [];
 
         // File upload handling
         uploadZone.addEventListener('click', () => fileInput.click());
@@ -581,27 +646,69 @@ HTML_TEMPLATE = '''
             e.preventDefault();
             uploadZone.classList.remove('dragover');
             if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                updateFileName();
+                addFiles(e.dataTransfer.files);
             }
         });
 
-        fileInput.addEventListener('change', updateFileName);
-
-        function updateFileName() {
+        fileInput.addEventListener('change', () => {
             if (fileInput.files.length) {
-                fileName.textContent = '📎 ' + fileInput.files[0].name;
-                fileName.classList.add('visible');
-                previewBtn.disabled = false;
-                redactBtn.disabled = false;
+                addFiles(fileInput.files);
             }
+        });
+
+        function addFiles(files) {
+            for (const file of files) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (['pdf', 'docx'].includes(ext)) {
+                    // Check for duplicates
+                    if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                        selectedFiles.push(file);
+                    }
+                }
+            }
+            updateFileList();
         }
 
-        // Preview
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+        }
+
+        function updateFileList() {
+            if (selectedFiles.length === 0) {
+                fileList.classList.remove('visible');
+                previewBtn.disabled = true;
+                redactBtn.disabled = true;
+                return;
+            }
+
+            fileList.classList.add('visible');
+            previewBtn.disabled = false;
+            redactBtn.disabled = false;
+
+            fileList.innerHTML = selectedFiles.map((file, index) => `
+                <div class="file-item">
+                    <span>📎 ${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>
+                    <button type="button" class="remove-btn" onclick="removeFile(${index})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        // Preview (first file only)
         previewBtn.addEventListener('click', async () => {
-            const formData = new FormData(form);
+            if (selectedFiles.length === 0) return;
+
+            const formData = new FormData();
+            formData.append('file', selectedFiles[0]);
+
+            document.querySelectorAll('input[name="categories"]:checked').forEach(cb => {
+                formData.append('categories', cb.value);
+            });
+            formData.append('custom_terms', document.getElementById('customTerms').value);
 
             loading.classList.add('visible');
+            document.getElementById('progressText').textContent = 'Analyzing document...';
+            document.getElementById('progressFill').style.width = '50%';
             results.classList.remove('visible');
             previewResults.classList.remove('visible');
 
@@ -619,15 +726,12 @@ HTML_TEMPLATE = '''
                     return;
                 }
 
-                // Show preview stats
                 let statsHtml = '';
                 statsHtml += `<div class="stat-item"><div class="stat-value">${data.total}</div><div class="stat-label">Total Items</div></div>`;
                 for (const [cat, count] of Object.entries(data.categories)) {
                     statsHtml += `<div class="stat-item"><div class="stat-value">${count}</div><div class="stat-label">${cat}</div></div>`;
                 }
                 document.getElementById('previewStats').innerHTML = statsHtml;
-
-                // Show preview content with highlights
                 document.getElementById('previewContent').innerHTML = data.preview_html;
                 previewResults.classList.add('visible');
 
@@ -637,21 +741,36 @@ HTML_TEMPLATE = '''
             }
         });
 
-        // Redact
+        // Batch Redact
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const formData = new FormData(form);
+            if (selectedFiles.length === 0) return;
 
             loading.classList.add('visible');
             results.classList.remove('visible');
             previewResults.classList.remove('visible');
 
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+
+            document.querySelectorAll('input[name="categories"]:checked').forEach(cb => {
+                formData.append('categories', cb.value);
+            });
+            formData.append('custom_terms', document.getElementById('customTerms').value);
+
+            document.getElementById('progressText').textContent = `Processing ${selectedFiles.length} document(s)...`;
+            document.getElementById('progressFill').style.width = '30%';
+
             try {
-                const response = await fetch('/redact', {
+                const response = await fetch('/redact-batch', {
                     method: 'POST',
                     body: formData
                 });
+
+                document.getElementById('progressFill').style.width = '90%';
 
                 const data = await response.json();
                 loading.classList.remove('visible');
@@ -662,17 +781,34 @@ HTML_TEMPLATE = '''
                 }
 
                 // Show results
-                document.getElementById('outputFileName').textContent = data.output_filename;
+                document.getElementById('outputSummary').textContent =
+                    `${data.file_count} document(s) processed, ${data.total_redactions} total redactions`;
 
                 let statsHtml = '';
-                statsHtml += `<div class="stat-item"><div class="stat-value">${data.stats.redactions}</div><div class="stat-label">Total Redactions</div></div>`;
-                for (const [cat, count] of Object.entries(data.stats.categories)) {
+                statsHtml += `<div class="stat-item"><div class="stat-value">${data.file_count}</div><div class="stat-label">Documents</div></div>`;
+                statsHtml += `<div class="stat-item"><div class="stat-value">${data.total_redactions}</div><div class="stat-label">Total Redactions</div></div>`;
+                for (const [cat, count] of Object.entries(data.total_categories)) {
                     statsHtml += `<div class="stat-item"><div class="stat-value">${count}</div><div class="stat-label">${cat}</div></div>`;
                 }
                 document.getElementById('statsContainer').innerHTML = statsHtml;
 
+                // Show individual file results
+                let batchHtml = '';
+                for (const file of data.files) {
+                    batchHtml += `
+                        <div class="batch-item">
+                            <div class="file-info">
+                                <div class="file-name">📄 ${file.original_name}</div>
+                                <div class="file-stats">${file.redactions} redactions</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                document.getElementById('batchResults').innerHTML = batchHtml;
+
                 const downloadBtn = document.getElementById('downloadBtn');
-                downloadBtn.href = '/download/' + data.output_id;
+                downloadBtn.href = '/download/' + data.download_id;
+                downloadBtn.textContent = data.file_count > 1 ? '📥 Download All (ZIP)' : '📥 Download Redacted Document';
                 downloadBtn.classList.add('visible');
 
                 results.classList.add('visible');
@@ -706,12 +842,10 @@ def preview():
     if ext not in ['.pdf', '.docx']:
         return jsonify({'error': 'Unsupported file type. Please upload a PDF or Word document.'})
 
-    # Save uploaded file
     file_id = str(uuid.uuid4())
     input_path = UPLOAD_FOLDER / f"{file_id}{ext}"
     file.save(str(input_path))
 
-    # Setup detector
     detector = SensitiveInfoDetector()
     categories = request.form.getlist('categories')
     for cat_key in categories:
@@ -721,12 +855,10 @@ def preview():
     custom_terms = request.form.get('custom_terms', '').strip().split('\n')
     detector.set_custom_terms(custom_terms)
 
-    # Extract text and find matches
     try:
         text = extract_text(str(input_path))
         matches = detector.find_sensitive_text(text)
 
-        # Build preview HTML with highlights
         preview_html = ""
         last_end = 0
         for start, end, matched_text, category in matches:
@@ -735,18 +867,16 @@ def preview():
             last_end = end
         preview_html += escape_html(text[last_end:])
 
-        # Count by category
         category_counts = {}
         for _, _, _, category in matches:
             category_counts[category] = category_counts.get(category, 0) + 1
 
-        # Cleanup
         os.remove(input_path)
 
         return jsonify({
             'total': len(matches),
             'categories': category_counts,
-            'preview_html': preview_html[:50000]  # Limit preview size
+            'preview_html': preview_html[:50000]
         })
 
     except Exception as e:
@@ -755,23 +885,14 @@ def preview():
         return jsonify({'error': str(e)})
 
 
-@app.route('/redact', methods=['POST'])
-def redact():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file uploaded'})
+@app.route('/redact-batch', methods=['POST'])
+def redact_batch():
+    if 'files' not in request.files:
+        return jsonify({'error': 'No files uploaded'})
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'})
-
-    ext = Path(file.filename).suffix.lower()
-    if ext not in ['.pdf', '.docx']:
-        return jsonify({'error': 'Unsupported file type'})
-
-    # Save uploaded file
-    file_id = str(uuid.uuid4())
-    input_path = UPLOAD_FOLDER / f"{file_id}{ext}"
-    file.save(str(input_path))
+    files = request.files.getlist('files')
+    if not files or files[0].filename == '':
+        return jsonify({'error': 'No files selected'})
 
     # Setup detector
     detector = SensitiveInfoDetector()
@@ -783,56 +904,98 @@ def redact():
     custom_terms = request.form.get('custom_terms', '').strip().split('\n')
     detector.set_custom_terms(custom_terms)
 
-    # Output path
-    original_name = Path(file.filename).stem
-    output_filename = f"{original_name}_redacted{ext}"
-    output_id = str(uuid.uuid4())
-    output_path = OUTPUT_FOLDER / f"{output_id}{ext}"
+    # Process each file
+    batch_id = str(uuid.uuid4())
+    batch_folder = OUTPUT_FOLDER / batch_id
+    batch_folder.mkdir(exist_ok=True)
 
-    try:
-        if ext == '.pdf':
-            stats = redact_pdf(str(input_path), str(output_path), detector)
-        else:
-            stats = redact_docx(str(input_path), str(output_path), detector)
+    results = []
+    total_redactions = 0
+    total_categories = {}
 
-        # Cleanup input
-        os.remove(input_path)
+    for file in files:
+        ext = Path(file.filename).suffix.lower()
+        if ext not in ['.pdf', '.docx']:
+            continue
 
-        # Store output filename mapping
-        with open(OUTPUT_FOLDER / f"{output_id}.meta", 'w') as f:
-            f.write(output_filename)
+        file_id = str(uuid.uuid4())
+        input_path = UPLOAD_FOLDER / f"{file_id}{ext}"
+        file.save(str(input_path))
 
-        return jsonify({
-            'success': True,
-            'output_id': output_id,
-            'output_filename': output_filename,
-            'stats': stats
-        })
+        original_name = Path(file.filename).stem
+        output_filename = f"{original_name}_redacted{ext}"
+        output_path = batch_folder / output_filename
 
-    except Exception as e:
-        if input_path.exists():
+        try:
+            if ext == '.pdf':
+                stats = redact_pdf(str(input_path), str(output_path), detector)
+            else:
+                stats = redact_docx(str(input_path), str(output_path), detector)
+
+            results.append({
+                'original_name': file.filename,
+                'output_name': output_filename,
+                'redactions': stats['redactions'],
+                'categories': stats['categories']
+            })
+
+            total_redactions += stats['redactions']
+            for cat, count in stats['categories'].items():
+                total_categories[cat] = total_categories.get(cat, 0) + count
+
             os.remove(input_path)
-        return jsonify({'error': str(e)})
+
+        except Exception as e:
+            if input_path.exists():
+                os.remove(input_path)
+            results.append({
+                'original_name': file.filename,
+                'error': str(e)
+            })
+
+    # If multiple files, create ZIP
+    if len(results) > 1:
+        zip_path = OUTPUT_FOLDER / f"{batch_id}.zip"
+        with zipfile.ZipFile(zip_path, 'w') as zf:
+            for file in batch_folder.iterdir():
+                zf.write(file, file.name)
+        download_id = f"{batch_id}.zip"
+    else:
+        # Single file - get its path
+        if results and 'output_name' in results[0]:
+            download_id = f"{batch_id}/{results[0]['output_name']}"
+        else:
+            return jsonify({'error': 'Failed to process file'})
+
+    return jsonify({
+        'success': True,
+        'download_id': download_id,
+        'file_count': len(results),
+        'total_redactions': total_redactions,
+        'total_categories': total_categories,
+        'files': results
+    })
 
 
-@app.route('/download/<output_id>')
-def download(output_id):
-    # Find the file
-    for ext in ['.pdf', '.docx']:
-        output_path = OUTPUT_FOLDER / f"{output_id}{ext}"
-        meta_path = OUTPUT_FOLDER / f"{output_id}.meta"
-
-        if output_path.exists():
-            # Get original filename
-            download_name = f"redacted_document{ext}"
-            if meta_path.exists():
-                with open(meta_path) as f:
-                    download_name = f.read().strip()
-
+@app.route('/download/<path:download_id>')
+def download(download_id):
+    # Handle ZIP downloads
+    if download_id.endswith('.zip'):
+        zip_path = OUTPUT_FOLDER / download_id
+        if zip_path.exists():
             return send_file(
-                str(output_path),
+                str(zip_path),
                 as_attachment=True,
-                download_name=download_name
+                download_name='redacted_documents.zip'
+            )
+    else:
+        # Handle single file downloads
+        file_path = OUTPUT_FOLDER / download_id
+        if file_path.exists():
+            return send_file(
+                str(file_path),
+                as_attachment=True,
+                download_name=file_path.name
             )
 
     return "File not found", 404
