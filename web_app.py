@@ -9,6 +9,9 @@ import uuid
 import shutil
 import tempfile
 import zipfile
+import threading
+import time
+import urllib.request
 from pathlib import Path
 from dataclasses import dataclass, field
 from flask import Flask, render_template_string, request, send_file, jsonify, redirect, url_for
@@ -1253,6 +1256,35 @@ def download(download_id):
 
 def escape_html(text):
     return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+
+@app.route('/health')
+def health():
+    """Health check endpoint for keep-alive pings"""
+    return jsonify({'status': 'ok', 'timestamp': time.time()})
+
+
+def keep_alive():
+    """Background thread to ping the app every 10 minutes to prevent Render from sleeping"""
+    app_url = os.environ.get('RENDER_EXTERNAL_URL')
+    if not app_url:
+        return  # Only run on Render
+
+    health_url = f"{app_url}/health"
+    while True:
+        time.sleep(600)  # 10 minutes
+        try:
+            urllib.request.urlopen(health_url, timeout=30)
+            print(f"Keep-alive ping sent to {health_url}")
+        except Exception as e:
+            print(f"Keep-alive ping failed: {e}")
+
+
+# Start keep-alive thread on Render
+if os.environ.get('RENDER_EXTERNAL_URL'):
+    keep_alive_thread = threading.Thread(target=keep_alive, daemon=True)
+    keep_alive_thread.start()
+    print("Keep-alive thread started")
 
 
 if __name__ == '__main__':
